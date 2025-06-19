@@ -1,8 +1,12 @@
-const { Kafka } = require('kafkajs');
+/*const { Kafka } = require('kafkajs');
+
+const broker = 'localhost:9092';
+console.log('💬 Broker utilisé :', broker);
 
 const kafka = new Kafka({
-    clientId: 'auth-service',
-    brokers: [ 'kafka:9092' ] // nom du conteneur Docker de kafka
+  clientId: 'auth-service',
+  brokers: [broker],
 });
 
 module.exports = kafka;
+*/

@@ -1,22 +1,15 @@
 const express = require('express');
-const app = express();
 require('dotenv').config();
+const app = express();
 
-const { connectProducer } = require('./kafka/producer');
-connectProducer();
-
-const PORT = process.env.PORT || 3000;
-
-// Routes
-const authRoutes = require('./routes/auth.route');
-
-// Middlewares
 app.use(express.json());
+
+const authRoutes = require('./routes/auth.route');
 app.use('/authentification', authRoutes);
 
-// Démarrage du serveur
-app.listen(PORT, () => {
-  console.log(`✅ Service Authentification lancé sur le port ${PORT}`);
-  console.log('SUPABASE_DATABASE_URL:', process.env.SUPABASE_DATABASE_URL);
 
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`✅ Service Auth lancé sur le port ${PORT}`);
 });
+   
