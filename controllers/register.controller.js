@@ -5,15 +5,14 @@ require('dotenv').config();
 
 const register = async (req, res) => {
   try {
-    const { username, email, telephone, password, profil_id } = req.body;
+    const { nom, email, numero_tel, password, confirmPassword, profil_id } = req.body;
 
-    if (!username || !email || !telephone || !password || !profil_id) {
+    if (!nom || !email || !numero_tel || !password || !confirmPassword || !profil_id) {
       return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
     }
 
-    const usernameCheck = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
-    if (usernameCheck.rows.length > 0) {
-      return res.status(400).json({ message: "Nom d'utilisateur déjà utilisé." });
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
     }
 
     const emailCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -21,31 +20,38 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Email déjà utilisé." });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const wallet = await Wallet.createRandom(); 
+    const phoneCheck = await pool.query('SELECT id FROM users WHERE numero_tel = $1', [numero_tel]);
+    if (phoneCheck.rows.length > 0) {
+      return res.status(400).json({ message: "Numéro de téléphone déjà utilisé." });
+    }
 
-    const result = await pool.query(`
-      INSERT INTO users (username, email, telephone, password, profil_id, wallet_address, is_profile_completed)
-      VALUES ($1, $2, $3, $4, $5, $6, false)
-      RETURNING id, username, email, telephone, profil_id, wallet_address
-    `, [username, email, telephone, hashedPassword, profil_id, wallet.address]);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const wallet = Wallet.createRandom();
+
+    const insertQuery = `
+      INSERT INTO users (
+        nom, email, numero_tel, password, profil_id,
+        wallet_address, is_profile_completed, statut
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, false, 'valide')
+      RETURNING id, nom, email, numero_tel, profil_id, wallet_address
+    `;
+
+    const result = await pool.query(insertQuery, [
+      nom, email, numero_tel, hashedPassword, profil_id, wallet.address
+    ]);
 
     const user = result.rows[0];
 
-    if (!user) {
-    return res.status(500).json({ message: "Erreur : utilisateur non retourné." });
-    }
-
     return res.status(201).json({
       message: 'Compte créé avec succès.',
-      user: result.rows[0]
+      user
     });
 
   } catch (error) {
-    console.error('Détails erreur:', error.message);
-    console.error(error.stack);
-    res.status(500).json({ message: 'Erreur serveur.' });
-    }
+    console.error('Erreur dans l’inscription:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur.' });
+  }
 };
 
 module.exports = { register };
