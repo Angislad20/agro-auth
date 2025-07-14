@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { Wallet } = require('ethers');
-const { pool } = require('../config/db');
+const { pool } = require('../../config/db');
 require('dotenv').config();
 
 const register = async (req, res) => {
@@ -31,10 +31,10 @@ const register = async (req, res) => {
     const insertQuery = `
       INSERT INTO users (
         nom, email, numero_tel, password, profil_id,
-        wallet_address, is_profile_completed, statut
+        wallet_adress, is_profile_completed, statut
       )
       VALUES ($1, $2, $3, $4, $5, $6, false, 'valide')
-      RETURNING id, nom, email, numero_tel, profil_id, wallet_address
+      RETURNING id, nom, email, numero_tel, profil_id, wallet_adress
     `;
 
     const result = await pool.query(insertQuery, [

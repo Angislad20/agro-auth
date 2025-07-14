@@ -7,6 +7,9 @@ app.use(express.json());
 const authRoutes = require('./routes/auth.route');
 app.use('/authentification', authRoutes);
 
+const orderRoutes = require('./routes/order.route');
+app.use('/commandes', orderRoutes)
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

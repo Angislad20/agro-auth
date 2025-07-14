@@ -1,5 +1,5 @@
 // controllers/get_user.controller.js
-const { pool } = require('../config/db');
+const { pool } = require('../../config/db');
 
 const getUserInfo = async (req, res) => {
   try {

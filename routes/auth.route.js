@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
-const { register } = require('../controllers/register.controller');
-const { login } = require('../controllers/login.controller');
-const { deleteUser } = require('../controllers/delete_user.controller');
+const { register } = require('../controllers/users/register.controller');
+const { login } = require('../controllers/users/login.controller');
+const { deleteUser } = require('../controllers/users/delete_user.controller');
 const authenticateToken = require('../middlewares/auth');
 const isAdminOrSelf = require('../middlewares/authorization');
-const { updateProfile } = require('../controllers/update_profile.controller');
-const { getUserInfo } = require('../controllers/get_user.controller');
-const { logout } = require('../controllers/logout.controller');
+const { updateProfile } = require('../controllers/users/update_profile.controller');
+const { getUserInfo } = require('../controllers/users/get_user.controller');
+const { logout } = require('../controllers/users/logout.controller');
 
 router.post('/inscription', register);
 router.post('/connexion', login);
