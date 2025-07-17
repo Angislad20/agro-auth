@@ -36,8 +36,6 @@ const getRecapOrder = async (req, res) => {
 
     return res.status(200).json({
       commande_id: data.commande_id,
-      annonce_id: data.annonce_id,
-      nom_culture_id: data.nom_culture_id,
       quantite: data.quantite,
       prix_unitaire: data.prix_unitaire,
       montant_total: montantTotal,
