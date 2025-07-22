@@ -5,31 +5,41 @@ require('dotenv').config();
 
 const login = async (req, res) => {
   try {
-    const { identifiant, password } = req.body;
+    const { identifiant, password, rememberMe } = req.body;
 
     if (!identifiant || !password) {
       return res.status(400).json({ message: 'Identifiant et mot de passe requis.' });
     }
 
-    // On récupère le user en fonction de l’identifiant
-    const userQuery = await pool.query(`
+    let userQuery;
+    let user;
+
+    userQuery = await pool.query(`
       SELECT * FROM users 
-      WHERE numero_tel = $1 OR email = $1
+      WHERE numero_tel = $1
     `, [identifiant]);
 
     if (userQuery.rows.length === 0) {
-      return res.status(404).json({ message: "Identifiant incorrect." });
+      user = userQuery.rows[0];
+
+      if (user.profil_id !== 'f23423d4-ca9e-409b-b3fb-26126ab66581') {
+        return res.status(400).json({ message: "Seul les producteurs peuvent se connecter avec leur numéro de téléphone." });
+      }
     }
 
-    const user = userQuery.rows[0];
+    if (!user) {
+      userQuery = await pool.query(`
+        SELECT * FROM users 
+        WHERE email = $1
+      `, [identifiant]);
 
-    // Vérification : producteur = téléphone | autres = email
-    if (user.profil_id == 1 && user.numero_tel !== identifiant) {
-      return res.status(400).json({ message: "Les producteurs doivent se connecter avec leur numéro de téléphone." });
-    }
+      if (userQuery.rows.length > 0) {
+        user = userQuery.rows[0];
 
-    if ((user.profil_id == 2 || user.profil_id == 3) && user.email !== identifiant) {
-      return res.status(400).json({ message: "Les coopératives et acheteurs doivent utiliser leur email." });
+        if (!['b74a4f6-67b6-474a-9bf5-d63e04d2a804', '35a3c32a-17f8-4771-a0d8-9295b1bc5917'].includes(user.profil_id)) {
+          return res.status(400).json({ message: "Seuls les coopératives et acheteurs peuvent se connecter avec leur email." });
+        }
+      }
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -40,7 +50,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { user_id: user.id, profil_id: user.profil_id },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: rememberMe ? '30d' : '1d' }
     );
 
     return res.status(200).json({

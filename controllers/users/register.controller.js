@@ -7,24 +7,37 @@ const register = async (req, res) => {
   try {
     const { nom, email, numero_tel, password, confirmPassword, profil_id } = req.body;
 
-    if (!nom || !email || !numero_tel || !password || !confirmPassword || !profil_id) {
-      return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
+    if (!profil_id) {
+      return res.status(400).json({ message: 'Le champ profil est obligatoire.' });
     }
+
+    if (profil_id  === 'f23423d4-ca9e-409b-b3fb-26126ab66581') {
+        if (!nom || !numero_tel || !password || !confirmPassword) {
+        return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
+      }
+
+      const phoneCheck = await pool.query('SELECT id FROM users WHERE numero_tel = $1', [numero_tel]);
+      if (phoneCheck.rows.length > 0) {
+        return res.status(400).json({ message: "Numéro de téléphone déjà utilisé." });
+      }
+    }
+    else if (profil_id === '7b74a4f6-67b6-474a-9bf5-d63e04d2a804' || profil_id === '35a3c32a-17f8-4771-a0d8-9295b1bc5917') {
+       if (!nom || !email || !password || !confirmPassword) {
+        return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
+      }
+
+      const emailCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ message: "Email déjà utilisé." });
+      }
+    }
+
 
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
     }
 
-    const emailCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-    if (emailCheck.rows.length > 0) {
-      return res.status(400).json({ message: "Email déjà utilisé." });
-    }
-
-    const phoneCheck = await pool.query('SELECT id FROM users WHERE numero_tel = $1', [numero_tel]);
-    if (phoneCheck.rows.length > 0) {
-      return res.status(400).json({ message: "Numéro de téléphone déjà utilisé." });
-    }
-
+    
     const hashedPassword = await bcrypt.hash(password, 10);
     const wallet = Wallet.createRandom();
 
@@ -38,7 +51,7 @@ const register = async (req, res) => {
     `;
 
     const result = await pool.query(insertQuery, [
-      nom, email, numero_tel, hashedPassword, profil_id, wallet.address
+      nom || null, email || null, numero_tel || null, hashedPassword, profil_id, wallet.address
     ]);
 
     const user = result.rows[0];
