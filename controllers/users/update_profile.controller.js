@@ -20,10 +20,6 @@ const updateProfile = async (req, res) => {
       "f23423d4-ca9e-409b-b3fb-26126ab66581": 'producteur',
       "35a3c32a-17f8-4771-a0d8-9295b1bc5917": 'cooperative',
       "7b74a4f6-67b6-474a-9bf5-d63e04d2a804": 'acheteur',
-      // si profil_id est un UUID, mappe plutôt par libellé
-      // ou fais un SELECT dans la table profil
-      // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNzQ1ZGE4MzMtM2NiMS00YzA2LWIxMTItOTQ3N2YwMTUwNzk1IiwicHJvZmlsX2lkIjoiN2I3NGE0ZjYtNjdiNi00NzRhLTliZjUtZDYzZTA0ZDJhODA0IiwiaWF0IjoxNzUyNTAxNDg5LCJleHAiOjE3NTI1ODc4ODl9.af_8S4ijAP6vaP6iY87oOVz0cmaReHr-wkQa-9pK0z8 (vincent patrck)
-      // eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMzE3MjFiNjgtYTI2Yy00NDkyLTk5NTAtODc5MWU4YTY3ZGI2IiwicHJvZmlsX2lkIjoiZjIzNDIzZDQtY2E5ZS00MDliLWIzZmItMjYxMjZhYjY2NTgxIiwiaWF0IjoxNzUyNTAxNjcxLCJleHAiOjE3NTI1ODgwNzF9.I71-3p0Cr15MIcihh-_mX-Rq-KvjwNY658efBze3Mpo.(antoine kouassi)
     };
 
     const allowedFieldsByProfile = {

@@ -31,7 +31,7 @@ const requestResetPassword = async (req, res) => {
     `, [user.id, code, moment().add(10, 'minutes').toDate()]);
 
     // Envoi de l’OTP
-    if (user.profil_id === 1) {
+    if (user.profil_id === 'f23423d4-ca9e-409b-b3fb-26126ab66581') {
       // Envoyer par SMS (Mock ou API Twilio etc.)
       console.log(`📲 SMS vers ${user.numero_tel}: Code OTP = ${code}`);
     } else {

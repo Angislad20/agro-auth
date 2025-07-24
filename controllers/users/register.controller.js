@@ -16,6 +16,19 @@ const register = async (req, res) => {
         return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
       }
 
+      const validPrefixes = ['07', '01', '05', '27'];
+      const phoneRegex = /^[0-9]{10}$/;
+
+      if (!phoneRegex.test(numero_tel)) {
+        return res.status(400).json({ message: 'Le numéro de téléphone doit contenir exactement 8 chiffres.' });
+      }
+
+      const prefix = numero_tel.substring(0, 2);
+      if (!validPrefixes.includes(prefix)) {
+        return res.status(400).json({ message: 'Le numéro de téléphone doit commencer par 01, 05, 07 ou 27.' });
+      }
+
+      // Vérifie s’il existe déjà
       const phoneCheck = await pool.query('SELECT id FROM users WHERE numero_tel = $1', [numero_tel]);
       if (phoneCheck.rows.length > 0) {
         return res.status(400).json({ message: "Numéro de téléphone déjà utilisé." });
