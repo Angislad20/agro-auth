@@ -3,39 +3,52 @@ const { Wallet } = require('ethers');
 const { pool } = require('../../config/db');
 require('dotenv').config();
 
+const profileMap = {
+  acheteur: '7b74a4f6-67b6-474a-9bf5-d63e04d2a804',
+  planteur: 'f23423d4-ca9e-409b-b3fb-26126ab66581',
+  // tu peux ajouter d'autres profils ici
+};
+
 const register = async (req, res) => {
   try {
-    const { nom, email, numero_tel, password, confirmPassword, profil_id } = req.body;
+    let { nom, email, numero_tel, password, confirmPassword, profil_id } = req.body;
 
     if (!profil_id) {
       return res.status(400).json({ message: 'Le champ profil est obligatoire.' });
     }
 
-    if (profil_id  === 'f23423d4-ca9e-409b-b3fb-26126ab66581') {
-        if (!nom || !numero_tel || !password || !confirmPassword) {
+    // Convertit profil_id simple en UUID
+    if (profileMap[profil_id]) {
+      profil_id = profileMap[profil_id];
+    }
+    // Sinon, on suppose que c'est déjà un UUID valide
+
+    // Validation selon profil
+    if (profil_id === profileMap.planteur) {
+      if (!nom || !numero_tel || !password || !confirmPassword) {
         return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
       }
 
+      // Validation numéro téléphone (10 chiffres, préfixes autorisés)
       const validPrefixes = ['07', '01', '05', '27'];
       const phoneRegex = /^[0-9]{10}$/;
 
       if (!phoneRegex.test(numero_tel)) {
-        return res.status(400).json({ message: 'Le numéro de téléphone doit contenir exactement 8 chiffres.' });
+        return res.status(400).json({ message: 'Le numéro de téléphone doit contenir exactement 10 chiffres.' });
       }
 
       const prefix = numero_tel.substring(0, 2);
       if (!validPrefixes.includes(prefix)) {
-        return res.status(400).json({ message: 'Le numéro de téléphone doit commencer par 01, 05, 07 ou 27.' });
+        return res.status(400).json({ message: 'Le numéro de téléphone doit commencer par 07, 01, 05 ou 27.' });
       }
 
-      // Vérifie s’il existe déjà
       const phoneCheck = await pool.query('SELECT id FROM users WHERE numero_tel = $1', [numero_tel]);
       if (phoneCheck.rows.length > 0) {
         return res.status(400).json({ message: "Numéro de téléphone déjà utilisé." });
       }
     }
-    else if (profil_id === '7b74a4f6-67b6-474a-9bf5-d63e04d2a804' || profil_id === '35a3c32a-17f8-4771-a0d8-9295b1bc5917') {
-       if (!nom || !email || !password || !confirmPassword) {
+    else if (profil_id === profileMap.acheteur) {
+      if (!nom || !email || !password || !confirmPassword) {
         return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
       }
 
@@ -43,14 +56,14 @@ const register = async (req, res) => {
       if (emailCheck.rows.length > 0) {
         return res.status(400).json({ message: "Email déjà utilisé." });
       }
+    } else {
+      return res.status(400).json({ message: "Profil invalide." });
     }
-
 
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
     }
 
-    
     const hashedPassword = await bcrypt.hash(password, 10);
     const wallet = Wallet.createRandom();
 

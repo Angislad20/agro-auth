@@ -19,11 +19,11 @@ const login = async (req, res) => {
       WHERE numero_tel = $1
     `, [identifiant]);
 
-    if (userQuery.rows.length === 0) {
+    if (userQuery.rows.length > 0) {
       user = userQuery.rows[0];
 
       if (user.profil_id !== 'f23423d4-ca9e-409b-b3fb-26126ab66581') {
-        return res.status(400).json({ message: "Seul les producteurs peuvent se connecter avec leur numéro de téléphone." });
+        return res.status(400).json({ message: "Seuls les producteurs peuvent se connecter avec leur numéro de téléphone." });
       }
     }
 
