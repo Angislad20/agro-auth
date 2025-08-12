@@ -3,7 +3,7 @@ const { pool } = require('../../config/db');
 const getOrders = async (req, res) => {
   try {
     // Priorité au token, puis query param, sinon valeur fictive par défaut
-    const acheteur_id = req.user?.id || req.query.acheteur_id || '31721b68-a26c-4492-9950-8791e8a67db6'; // <-- ID test ici
+    const acheteur_id = req.user.id;
 
     // Si tu veux forcer un 400 quand pas d'ID du tout, tu peux supprimer la valeur par défaut ci-dessus
 
@@ -19,7 +19,7 @@ const getOrders = async (req, res) => {
         m.libelle AS mode_paiement
       FROM commandes_vente c
       JOIN annonces_vente a ON c.annonces_vente_id = a.id
-      LEFT JOIN moyens_paiement m ON c.mode_paiement_id = m.id
+      LEFT JOIN types_paiement m ON c.mode_paiement_id = m.id
       WHERE c.acheteur_id = $1
       ORDER BY c.created_at DESC
     `, [acheteur_id]);

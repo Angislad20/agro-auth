@@ -5,7 +5,8 @@ require('dotenv').config();
 
 const profileMap = {
   acheteur: '7b74a4f6-67b6-474a-9bf5-d63e04d2a804',
-  planteur: 'f23423d4-ca9e-409b-b3fb-26126ab66581',
+  producteur: 'f23423d4-ca9e-409b-b3fb-26126ab66581',
+  cooperatives: '35a3c32a-17f8-4771-a0d8-9295b1bc5917'
   // tu peux ajouter d'autres profils ici
 };
 
@@ -24,7 +25,7 @@ const register = async (req, res) => {
     // Sinon, on suppose que c'est déjà un UUID valide
 
     // Validation selon profil
-    if (profil_id === profileMap.planteur) {
+    if (profil_id === profileMap.producteur) {
       if (!nom || !numero_tel || !password || !confirmPassword) {
         return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
       }
@@ -47,7 +48,7 @@ const register = async (req, res) => {
         return res.status(400).json({ message: "Numéro de téléphone déjà utilisé." });
       }
     }
-    else if (profil_id === profileMap.acheteur) {
+    else if (profil_id === profileMap.acheteur || profil_id === profileMap.cooperatives) {
       if (!nom || !email || !password || !confirmPassword) {
         return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
       }

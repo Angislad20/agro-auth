@@ -2,5 +2,5 @@ require('dotenv').config();
 
 module.exports = {
     secret: process.env.JWT_SECRET,
-    expiresIn: '7d' // duréé de validité du token
+    expiresIn: '30d' // durée de validité du token
 };

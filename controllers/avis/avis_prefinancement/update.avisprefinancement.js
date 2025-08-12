@@ -1,49 +1,50 @@
 const { pool } = require('../../../config/db');
 
-
 const updateAvisPrefinancement = async (req, res) => {
   try {
     const { avis_prefinancement_id } = req.params;
-    const { note, commentaire } = req.body;
+    const noteur_id = req.user.id;
+    const { note, commentaire, titre } = req.body;
 
-    const fields = [];
-    const values = [];
-    let index = 1;
+    const avis = await pool.query(`SELECT * FROM avis_prefinancement WHERE id = $1`, [avis_prefinancement_id]);
+    if (avis.rows.length === 0) return res.status(404).json({ message: "Avis non trouvé." });
 
-    if (note !== undefined) {
-      fields.push(`note = $${index++}`);
-      values.push(note);
+    if (avis.rows[0].noteur_id !== noteur_id) {
+      return res.status(403).json({ message: "Non autorisé à modifier cet avis." });
     }
 
-    if (commentaire !== undefined) {
-      fields.push(`commentaire = $${index++}`);
-      values.push(commentaire);
-    }
+    const updateQuery = `
+      UPDATE avis_prefinancement
+      SET note = $1, commentaire = $2, titre = $3, created_at = CURRENT_TIMESTAMP
+      WHERE id = $4
+      RETURNING *
+    `;
 
-    if (fields.length === 0) {
-      return res.status(400).json({ message: 'Aucune donnée à mettre à jour.' });
-    }
+    await pool.query(updateQuery, [note, commentaire, titre, avis_prefinancement_id]);
 
-    values.push(avis_prefinancement_id);
-    const query = `UPDATE avis_prefinancement SET ${fields.join(', ')} WHERE id = $${index} RETURNING *`;
+    const selectQuery = `
+      SELECT av.*,
+        u.nom AS nom_noteur,
+        a.photo AS photo_annonce,
+        tc.libelle AS nom_produit
+      FROM avis_prefinancement av
+      JOIN users u ON u.id = av.noteur_id
+      JOIN annonces_prefinancement a ON a.id = av.annonces_prefinancement_id
+      JOIN type_culture tc ON tc.id = a.type_culture_id
+      WHERE av.id = $1;
+    `;
 
-    const result = await pool.query(query, values);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Avis non trouvé." });
-    }
+    const result = await pool.query(selectQuery, [avis_prefinancement_id]);
 
     res.status(200).json({
-      message: "Avis mis à jour avec succès.",
+      message: "Avis modifié avec succès.",
       avis: result.rows[0]
     });
 
   } catch (error) {
-    console.error("Erreur modification avis :", error);
+    console.error('Erreur modification avis préfinancement :', error);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
 
-module.exports = {
-  updateAvisPrefinancement
-};
+module.exports = { updateAvisPrefinancement };

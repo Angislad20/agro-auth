@@ -2,9 +2,9 @@ const { pool } = require('../../config/db');
 const { v4: uuidv4 } = require('uuid');
 
 const STATUTS_VALIDES = [
-  'en cours',
+  'en attente de confirmation',
   'en attente de paiement',
-  'annulé',
+  'en attente de réception',
   'terminé'
 ];
 
@@ -15,18 +15,28 @@ const createOrder = async (req, res) => {
       annonces_vente_id,
       quantite,
       unite,
-      mode_paiement_id,
-      statut = 'en attente de paiement' // valeur par défaut
+      types_paiement_id,
+      statut = 'en attente de paiement'
     } = req.body;
 
-    // Validation des champs essentiels
-    if (!annonces_vente_id || !quantite || !unite) {
+    if (!annonces_vente_id || !quantite || !unite || !types_paiement_id) {
       return res.status(400).json({ message: 'Champs obligatoires manquants.' });
     }
 
-    // Vérifier que l'annonce existe et récupérer le prix
+    // Vérifier que le type de paiement existe
+    const mpCheck = await pool.query(
+      'SELECT id FROM types_paiement WHERE id = $1',
+      [types_paiement_id]
+    );
+    if (mpCheck.rows.length === 0) {
+    }
+
+    // Récupère le prix unitaire et le type de culture
     const annonceCheck = await pool.query(
-      'SELECT prix_kg FROM annonces_vente WHERE id = $1',
+      `SELECT a.prix_kg, t.libelle AS type_culture
+       FROM annonces_vente a
+       JOIN type_culture t ON a.type_culture_id = t.id
+       WHERE a.id = $1`,
       [annonces_vente_id]
     );
 
@@ -34,13 +44,10 @@ const createOrder = async (req, res) => {
       return res.status(404).json({ message: 'Annonce non trouvée.' });
     }
 
-    const prixUnitaire = annonceCheck.rows[0].prix_kg;
-
+    const { prix_kg, type_culture } = annonceCheck.rows[0];
     const quantiteKg = unite === 'T' ? quantite * 1000 : quantite;
+    const prix_total = quantiteKg * prix_kg;
 
-    const prix_total = quantiteKg * prixUnitaire;
-
-    // Vérifier si le statut est valide
     if (!STATUTS_VALIDES.includes(statut)) {
       return res.status(400).json({ message: 'Statut invalide.' });
     }
@@ -49,11 +56,11 @@ const createOrder = async (req, res) => {
 
     const insertQuery = `
       INSERT INTO commandes_vente (
-        id, annonces_vente_id, acheteur_id, quantite, prix_total, mode_paiement_id, statut, created_at
+        id, annonces_vente_id, acheteur_id, quantite, prix_total, types_paiement_id, statut, created_at
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP
       )
-      RETURNING *;
+      RETURNING id, acheteur_id, quantite, prix_total, types_paiement_id, statut, created_at;
     `;
 
     const result = await pool.query(insertQuery, [
@@ -62,13 +69,18 @@ const createOrder = async (req, res) => {
       acheteur_id,
       quantiteKg,
       prix_total,
-      mode_paiement_id,
+      types_paiement_id,
       statut
     ]);
 
+    const commande = {
+      ...result.rows[0],
+      type_culture
+    };
+
     return res.status(201).json({
       message: 'Commande enregistrée avec succès.',
-      commande: result.rows[0]
+      commande
     });
 
   } catch (error) {

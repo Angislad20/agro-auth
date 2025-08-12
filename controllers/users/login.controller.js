@@ -36,7 +36,7 @@ const login = async (req, res) => {
       if (userQuery.rows.length > 0) {
         user = userQuery.rows[0];
 
-        if (!['b74a4f6-67b6-474a-9bf5-d63e04d2a804', '35a3c32a-17f8-4771-a0d8-9295b1bc5917'].includes(user.profil_id)) {
+        if (!['7b74a4f6-67b6-474a-9bf5-d63e04d2a804', '35a3c32a-17f8-4771-a0d8-9295b1bc5917'].includes(user.profil_id)) {
           return res.status(400).json({ message: "Seuls les coopératives et acheteurs peuvent se connecter avec leur email." });
         }
       }

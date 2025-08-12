@@ -3,30 +3,46 @@ const { pool } = require('../../../config/db');
 
 const createAvisPrefinancement = async (req, res) => {
   try {
-    const { note, commentaire, annonce_prefinancement_id } = req.body;
     const noteur_id = req.user.id;
+    const { note, titre, commentaire, annonces_prefinancement_id } = req.body;
 
-    if (!note || !annonce_prefinancement_id) {
+    if (!note || !annonces_prefinancement_id) {
       return res.status(400).json({ message: 'Note et ID annonce requis.' });
     }
 
     const avis_prefinancement_id = uuidv4();
 
-    const query = `
-      INSERT INTO avis_prefinancement (id, note, commentaire, noteur_id, annonce_id)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *`;
-    const result = await pool.query(query, [avis_prefinancement_id, note, commentaire, noteur_id, annonce_prefinancement_id]);
+    const insertQuery = `
+      INSERT INTO avis_prefinancement (id, note, titre, commentaire, noteur_id, annonces_prefinancement_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `;
+
+    await pool.query(insertQuery, [avis_prefinancement_id, note, titre, commentaire, noteur_id, annonces_prefinancement_id]);
+
+    const selectQuery = `
+      SELECT av.*,
+        u.nom AS nom_noteur,
+        a.photo AS photo_annonce,
+        tc.libelle AS nom_produit
+      FROM avis_prefinancement av
+      JOIN users u ON u.id = av.noteur_id
+      JOIN annonces_prefinancement a ON a.id = av.annonces_prefinancement_id
+      JOIN type_culture tc ON tc.id = a.type_culture_id
+      WHERE av.id = $1;
+    `;
+
+    const result = await pool.query(selectQuery, [avis_prefinancement_id]);
 
     return res.status(201).json({
-      message: 'Avis créé avec succès.',
+      message: "Avis ajouté avec succès.",
       avis: result.rows[0]
     });
+
   } catch (error) {
-    console.error('Erreur création avis :', error);
-    res.status(500).json({ message: 'Erreur serveur.' });
+    console.error('Erreur création avis préfinancement :', error);
+    return res.status(500).json({ message: "Erreur serveur." });
   }
 };
-module.exports = {
-  createAvisPrefinancement
-};
+
+module.exports = { createAvisPrefinancement };

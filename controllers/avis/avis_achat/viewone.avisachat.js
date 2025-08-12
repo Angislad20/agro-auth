@@ -2,9 +2,19 @@ const { pool } = require('../../../config/db');
 
 const getOneAchatReview = async (req, res) => {
   try {
-    const avis_achat_id = req.params.avis_achat_id;
+    const { avis_achat_id } = req.params;
 
-    const query = `SELECT * FROM avis_achat WHERE id = $1`;
+    const query = `
+      SELECT av.*,
+             u.nom AS nom_noteur,
+             a.photo AS photo_annonce,
+             tc.libelle AS nom_produit
+      FROM avis_achat av
+      JOIN users u ON u.id = av.noteur_id
+      JOIN annonces_achat a ON a.id = av.annonces_achat_id
+      JOIN type_culture tc ON tc.id = a.type_culture_id
+      WHERE av.id = $1;
+    `;
     const result = await pool.query(query, [avis_achat_id]);
 
     if (result.rows.length === 0) {
