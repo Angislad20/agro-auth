@@ -2,10 +2,11 @@ const { pool } = require('../../config/db');
 const { v4: uuidv4 } = require('uuid');
 
 const STATUTS_VALIDES = [
-  'en attente de confirmation',
   'en attente de paiement',
+  'en attente de livraison',
   'en attente de réception',
-  'terminé'
+  'terminé',
+  'annulé'
 ];
 
 const createOrder = async (req, res) => {

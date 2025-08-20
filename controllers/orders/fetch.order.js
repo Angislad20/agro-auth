@@ -2,24 +2,20 @@ const { pool } = require('../../config/db');
 
 const getOrders = async (req, res) => {
   try {
-    // Priorité au token, puis query param, sinon valeur fictive par défaut
     const acheteur_id = req.user.id;
-
-    // Si tu veux forcer un 400 quand pas d'ID du tout, tu peux supprimer la valeur par défaut ci-dessus
 
     const result = await pool.query(`
       SELECT 
-        c.id,
-        c.quantite,
+        u.photo_planteur,
         c.prix_total,
-        c.statut,
-        c.created_at,
-        a.type_culture_id,
-        a.prix_kg,
-        m.libelle AS mode_paiement
+        tc.libelle AS nom_culture
       FROM commandes_vente c
-      JOIN annonces_vente a ON c.annonces_vente_id = a.id
-      LEFT JOIN types_paiement m ON c.mode_paiement_id = m.id
+      JOIN annonces_vente a 
+        ON c.annonces_vente_id = a.id
+      JOIN type_culture tc
+        ON a.type_culture_id = tc.id
+      JOIN users u
+        ON a.user_id = u.id
       WHERE c.acheteur_id = $1
       ORDER BY c.created_at DESC
     `, [acheteur_id]);
@@ -33,6 +29,5 @@ const getOrders = async (req, res) => {
     return res.status(500).json({ message: 'Erreur serveur.' });
   }
 };
-
 
 module.exports = { getOrders };
