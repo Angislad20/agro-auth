@@ -6,6 +6,7 @@ const { getOneAvisVente } = require('../controllers/avis/avis_vente/viewone.avis
 const { createAvisVente } = require('../controllers/avis/avis_vente/create.avisvente');
 const { deleteAvisVente } = require('../controllers/avis/avis_vente/delete.avisvente');
 const { updateAvisVente } = require('../controllers/avis/avis_vente/update.avisvente');
+const { getLoadingOpinions } = require('../controllers/avis/avis_vente/no-avis.avisvente');
 
 const { getAvisByAchatAnnonce } = require('../controllers/avis/avis_achat/viewall.avisachat');
 const { getOneAchatReview } = require('../controllers/avis/avis_achat/viewone.avisachat');
@@ -27,6 +28,7 @@ router.get('/avis-vente/:avis_vente_id', getOneAvisVente);
 router.post('/avis-vente', authenticateToken, createAvisVente);
 router.delete('/avis-vente/:avis_vente_id', authenticateToken, deleteAvisVente);
 router.put('/avis-vente/:avis_vente_id', authenticateToken, updateAvisVente);
+router.get('/avis-vente-en-attente/:avis_vente_id', authenticateToken, getLoadingOpinions);
 
 // Routes for Avis Achat
 router.get('/avis-achat/annonce/:annonce_id', getAvisByAchatAnnonce);

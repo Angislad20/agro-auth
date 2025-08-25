@@ -15,7 +15,6 @@ const getAvisVenteByAnnonce = async (req, res) => {
 };
 
 
-
 module.exports = {
   getAvisVenteByAnnonce
 };
