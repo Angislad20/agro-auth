@@ -2,7 +2,6 @@ const { pool } = require('../../config/db');
 const { v4: uuidv4 } = require('uuid');
 
 const STATUTS_VALIDES = [
-  'en attente de paiement',
   'en attente de livraison',
   'en attente de réception',
   'terminé',
@@ -16,20 +15,11 @@ const createOrder = async (req, res) => {
       annonces_vente_id,
       quantite,
       unite,
-      types_paiement_id,
-      statut = 'en attente de paiement'
+      statut = 'en attente de livraison'
     } = req.body;
 
-    if (!annonces_vente_id || !quantite || !unite || !types_paiement_id) {
+    if (!annonces_vente_id || !quantite || !unite) {
       return res.status(400).json({ message: 'Champs obligatoires manquants.' });
-    }
-
-    // Vérifier que le type de paiement existe
-    const mpCheck = await pool.query(
-      'SELECT id FROM types_paiement WHERE id = $1',
-      [types_paiement_id]
-    );
-    if (mpCheck.rows.length === 0) {
     }
 
     // Récupère le prix unitaire et le type de culture
@@ -57,11 +47,11 @@ const createOrder = async (req, res) => {
 
     const insertQuery = `
       INSERT INTO commandes_vente (
-        id, annonces_vente_id, acheteur_id, quantite, prix_total, types_paiement_id, statut, created_at
+        id, annonces_vente_id, acheteur_id, quantite, prix_total, statut, created_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP
+        $1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP
       )
-      RETURNING id, acheteur_id, quantite, prix_total, types_paiement_id, statut, created_at;
+      RETURNING id, acheteur_id, quantite, prix_total, statut, created_at;
     `;
 
     const result = await pool.query(insertQuery, [
@@ -70,7 +60,6 @@ const createOrder = async (req, res) => {
       acheteur_id,
       quantiteKg,
       prix_total,
-      types_paiement_id,
       statut
     ]);
 

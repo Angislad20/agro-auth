@@ -12,6 +12,7 @@ const { logout } = require('../controllers/users/logout.controller');
 const { requestResetPassword } = require('../controllers/users/requestPassword.controller');
 const { verifyOtp } = require('../controllers/users/verifyOtp.controller');
 const { resetPassword } = require('../controllers/users/resetPassword.controller');
+const { updateProfileInfo } = require('../controllers/users/profil_informations.controller');
 
 router.post('/inscription', register);
 router.post('/connexion', login);
@@ -22,5 +23,6 @@ router.post('/deconnexion', authenticateToken, logout);
 router.post('/mot-de-passe-oublié', requestResetPassword);
 router.post('/verification-otp', verifyOtp);
 router.post('/mot-de-passe-reinitialisation', resetPassword);
+router.put('/modifier-informations-profil/:userId', authenticateToken, updateProfileInfo);
 
 module.exports = router;
